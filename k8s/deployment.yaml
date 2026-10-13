@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulse
+  labels:
+    app: pulse
+spec:
+  replicas: 2
+  minReadySeconds: 40
+  selector:
+    matchLabels:
+      app: pulse
+  template:
+    metadata:
+      labels:
+        app: pulse
+    spec:
+      containers:
+      - name: pulse
+        image: pulse:0.1.1
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        env:
+        - name: FORCE_UNREADY
+          value: "false"
